@@ -1,0 +1,89 @@
+# 环境变量文件 - 包含敏感的API密钥和私钥
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Node.js 依赖
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript 编译输出
+dist/
+build/
+*.tsbuildinfo
+
+# 日志文件
+logs/
+*.log
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 运行时数据
+.npm
+.eslintcache
+.nyc_output
+
+# 覆盖率目录
+coverage/
+*.lcov
+
+# 系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE 和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 临时文件
+tmp/
+temp/
+
+# 备份文件
+*.bak
+*.backup
+*.old
+
+# 测试输出
+test-results/
+test-output/
+
+# 个人配置文件
+config/personal.json
+config/local.json
+
+# 钱包和密钥文件
+keystore/
+wallets/
+*.keystore
+*.pem
+*.p12
+
+# 缓存目录
+.cache/
+
+# 包管理器锁文件（可选，根据团队需要）
+# package-lock.json
+# yarn.lock
+
+# 文档生成
+docs/generated/
+
+# 交易记录和日志（如果保存的话）
+transactions/
+swap-logs/
+*.csv 

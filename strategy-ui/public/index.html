@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>策略管理系统</title>
+    
+    <!-- CSS样式 -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/recovery.css">
+    
+    <!-- 样式文件 -->
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/themes.css">
+    
+    <!-- 外部库 -->
+    <script src="/libs/socket.io.min.js"></script>
+    <script src="/libs/chart.js"></script>
+    <script src="/libs/moment.min.js"></script>
+    
+    <!-- 页面图标 -->
+    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
+</head>
+<body>
+    <!-- 加载动画 -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>正在加载策略管理系统...</p>
+    </div>
+
+    <!-- 主容器 -->
+    <div id="app" class="app-container">
+        <!-- 顶部导航栏 -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="app-title">🥞 策略管理系统</h1>
+                    <div class="connection-status" id="connectionStatus">
+                        <span class="status-dot" id="statusDot"></span>
+                        <span id="statusText">连接中...</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-outline" id="themeToggle">🌙</button>
+                    <button class="btn btn-primary" id="refreshBtn">🔄 刷新</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 侧边导航 -->
+            <nav class="sidebar" id="sidebar">
+                <div class="nav-menu">
+                    <div class="nav-item active" data-page="dashboard">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">仪表盘</span>
+                    </div>
+                    <div class="nav-item" data-page="create">
+                        <span class="nav-icon">➕</span>
+                        <span class="nav-text">创建策略</span>
+                    </div>
+                    <div class="nav-item" data-page="strategies">
+                        <span class="nav-icon">📋</span>
+                        <span class="nav-text">策略列表</span>
+                    </div>
+                    <div class="nav-item" data-page="monitor">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-text">实时监控</span>
+                    </div>
+                    <div class="nav-item" data-page="analytics">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">盈亏分析</span>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- 页面内容区域 -->
+            <div class="content-area">
+                <!-- 仪表盘页面 -->
+                <div id="page-dashboard" class="page-content active">
+                    <div class="page-header">
+                        <h2>策略仪表盘</h2>
+                        <p>总体策略运行概览</p>
+                    </div>
+                    
+                    <!-- 统计卡片 -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-content">
+                                <h3 id="totalStrategies">0</h3>
+                                <p>总策略数</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🟢</div>
+                            <div class="stat-content">
+                                <h3 id="activeStrategies">0</h3>
+                                <p>运行中</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-content">
+                                <h3 id="totalProfit">$0.00</h3>
+                                <p>总盈亏</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-content">
+                                <h3 id="successRate">0%</h3>
+                                <p>成功率</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 快速操作和最近活动 -->
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <h3>快速操作</h3>
+                            <div class="quick-actions">
+                                <button class="action-btn" id="quickCreateStrategy">
+                                    <span class="action-icon">➕</span>
+                                    <span>创建新策略</span>
+                                </button>
+                                <button class="action-btn" id="quickMonitor">
+                                    <span class="action-icon">👁️</span>
+                                    <span>查看监控</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-card">
+                            <h3>最近活动</h3>
+                            <div id="recentActivity" class="activity-list">
+                                <div class="activity-item">
+                                    <span class="activity-time">刚刚</span>
+                                    <span class="activity-text">系统连接成功</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 创建策略页面 -->
+                <div id="page-create" class="page-content">
+                    <div class="page-header">
+                        <h2>创建新策略</h2>
+                        <p>配置自动流动性策略参数</p>
+                    </div>
+                    
+                    <div class="create-strategy-container">
+                        <form id="strategyForm" class="strategy-form">
+                            <!-- 策略配置表单将在这里动态加载 -->
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 策略列表页面 -->
+                <div id="page-strategies" class="page-content">
+                    <div class="page-header">
+                        <h2>策略列表</h2>
+                        <p>管理所有策略实例</p>
+                    </div>
+                    
+                    <div class="strategies-container">
+                        <div id="strategiesList" class="strategies-list">
+                            <!-- 策略列表将在这里动态加载 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 实时监控页面 -->
+                <div id="page-monitor" class="page-content">
+                    <div class="page-header">
+                        <h2>实时监控</h2>
+                        <p>监控策略执行状态和价格变化</p>
+                    </div>
+                    
+                    <div class="monitor-container">
+                        <div id="monitorPanel" class="monitor-panel">
+                            <!-- 监控面板将在这里动态加载 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 盈亏分析页面 -->
+                <div id="page-analytics" class="page-content">
+                    <div class="page-header">
+                        <h2>盈亏分析</h2>
+                        <p>策略收益统计和风险分析</p>
+                    </div>
+                    
+                    <div class="analytics-container">
+                        <div id="analyticsPanel" class="analytics-panel">
+                            <!-- 分析面板将在这里动态加载 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 模态框 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">标题</h3>
+                <span class="modal-close" id="modalClose">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- 模态框内容 -->
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <!-- 模态框按钮 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知容器 -->
+    <div id="notifications" class="notifications-container"></div>
+
+    <!-- JavaScript模块 -->
+    <script type="module" src="/js/utils/formatter.js"></script>
+    <script type="module" src="/js/utils/validator.js"></script>
+    <script type="module" src="/js/utils/chart-config.js"></script>
+    
+    <script type="module" src="/js/api.js"></script>
+    <script type="module" src="/js/websocket.js"></script>
+    
+    <script type="module" src="/js/components/strategy-form.js"></script>
+    <script type="module" src="/js/components/strategy-list.js"></script>
+    <script type="module" src="/js/components/monitor-panel.js"></script>
+    <script type="module" src="/js/components/profit-chart.js"></script>
+    <script type="module" src="/js/components/status-card.js"></script>
+    <script src="/js/components/profit-loss-display.js"></script>
+    
+    <script type="module" src="/js/app.js"></script>
+</body>
+</html> 

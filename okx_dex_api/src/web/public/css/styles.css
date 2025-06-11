@@ -1,0 +1,903 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 10px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+}
+
+.header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 16px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    pointer-events: none;
+}
+
+.header h1 {
+    font-size: 1.6em;
+    margin-bottom: 4px;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+}
+
+.header p {
+    opacity: 0.9;
+    font-size: 0.85em;
+    position: relative;
+    z-index: 1;
+}
+
+.content {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 16px;
+    min-height: calc(100vh - 120px);
+}
+
+/* 主要布局区域 */
+.section {
+    background: linear-gradient(145deg, #ffffff, #f8f9ff);
+    border-radius: 12px;
+    padding: 18px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.section:hover::before {
+    opacity: 1;
+}
+
+.section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+/* 网格布局分区 */
+.grid-left {
+    grid-column: 1;
+}
+
+.grid-right {
+    grid-column: 2;
+}
+
+.grid-full {
+    grid-column: 1 / -1;
+}
+
+/* 配置区域 - 左上 */
+#configSection {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+/* 账户信息 - 左下 */
+.account-section {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+/* 代币交换 - 右侧大区域 */
+.swap-section {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    min-height: fit-content;
+}
+
+/* 优化代币交换区域内容分布 */
+.swap-section .token-selection {
+    margin-bottom: 16px;
+}
+
+.swap-section .form-row {
+    margin-bottom: 16px;
+}
+
+.swap-section .btn-group {
+    margin-top: 20px;
+    margin-bottom: 16px;
+}
+
+.swap-section .result {
+    margin-top: 8px;
+    flex-shrink: 0;
+}
+
+/* 交易追踪 - 右下 */
+.track-section {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+/* 解锁界面 - 左上角位置 */
+#unlockSection {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.section h3 {
+    color: #2d3748;
+    margin-bottom: 12px;
+    font-size: 1.1em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(90deg, #667eea, #764ba2) 1;
+    border-image-slice: 1;
+    padding-bottom: 6px;
+}
+
+.section h4 {
+    color: #667eea;
+    margin: 12px 0 8px 0;
+    font-size: 0.95em;
+    font-weight: 600;
+}
+
+/* 表单样式优化 */
+.form-group {
+    margin-bottom: 12px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.form-row .form-group {
+    margin-bottom: 0;
+}
+
+.form-row-triple {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    color: #4a5568;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    background: white;
+    font-family: inherit;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+/* 现代化按钮设计 */
+.btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-bottom: 8px;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 11px;
+    width: auto;
+    margin-bottom: 4px;
+    margin-right: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3182ce, #2c5282);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #38a169, #2f855a);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #ed8936, #dd6b20);
+    color: white;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #718096, #4a5568);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #3182ce, #2a69ac);
+}
+
+.btn-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.btn-group .btn {
+    margin-bottom: 0;
+}
+
+/* 结果显示优化 */
+.result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    display: none;
+    font-size: 0.85em;
+    word-wrap: break-word;
+    border-left: 4px solid;
+    position: relative;
+}
+
+.result.success {
+    background: linear-gradient(135deg, #f0fff4, #c6f6d5);
+    border-left-color: #38a169;
+    color: #22543d;
+}
+
+.result.error {
+    background: linear-gradient(135deg, #fff5f5, #fed7d7);
+    border-left-color: #e53e3e;
+    color: #742a2a;
+}
+
+/* 状态指示器 */
+.status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.status.connected {
+    background: linear-gradient(135deg, #c6f6d5, #9ae6b4);
+    color: #22543d;
+}
+
+.status.connected::before {
+    background: #38a169;
+    animation: pulse 2s infinite;
+}
+
+.status.disconnected {
+    background: linear-gradient(135deg, #fed7d7, #fbb6ce);
+    color: #742a2a;
+}
+
+.status.disconnected::before {
+    background: #e53e3e;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.loading {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 6px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Token相关样式 */
+.token-info {
+    margin-top: 6px;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 0.8em;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.token-info.show {
+    max-height: 100px;
+}
+
+.token-info.success {
+    background: linear-gradient(135deg, #f0fff4, #c6f6d5);
+    border: 1px solid #9ae6b4;
+    color: #22543d;
+}
+
+.token-info.error {
+    background: linear-gradient(135deg, #fff5f5, #fed7d7);
+    border: 1px solid #fbb6ce;
+    color: #742a2a;
+}
+
+.token-selection {
+    margin-bottom: 12px;
+}
+
+.token-selection label {
+    margin-bottom: 6px;
+}
+
+.token-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.token-btn {
+    background: linear-gradient(135deg, #edf2f7, #e2e8f0);
+    border: 1px solid #cbd5e0;
+    color: #4a5568;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.token-btn:hover {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.amount-input-group {
+    display: flex;
+    gap: 8px;
+}
+
+.amount-input-group input {
+    flex: 2;
+}
+
+.amount-input-group select {
+    flex: 1;
+    min-width: 100px;
+}
+
+.conversion-text {
+    margin-top: 4px;
+    font-size: 0.75em;
+    color: #718096;
+    font-style: italic;
+}
+
+/* 信息网格 */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.info-item {
+    background: rgba(102, 126, 234, 0.05);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.info-item label {
+    color: #4a5568;
+    font-size: 0.75em;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-item span {
+    display: block;
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 0.9em;
+    word-break: break-all;
+}
+
+/* 对话框样式 */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.dialog {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dialog h4 {
+    color: #2d3748;
+    margin-bottom: 12px;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+.hint {
+    color: #718096;
+    margin-bottom: 16px;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-center small {
+    color: #718096;
+    font-size: 0.8em;
+}
+
+.text-center a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.text-center a:hover {
+    text-decoration: underline;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .content {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+    
+    #configSection,
+    .account-section,
+    .swap-section,
+    .track-section {
+        grid-column: 1;
+        grid-row: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 5px;
+    }
+    
+    .container {
+        max-width: 100%;
+    }
+    
+    .content {
+        padding: 15px;
+        gap: 12px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row-triple {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .btn-group {
+        grid-template-columns: 1fr;
+    }
+    
+    .amount-input-group {
+        flex-direction: column;
+    }
+    
+    .token-buttons {
+        justify-content: center;
+    }
+}
+
+/* 动画增强 */
+@media (prefers-reduced-motion: no-preference) {
+    .section {
+        animation: fadeInUp 0.6s ease;
+    }
+    
+    .section:nth-child(1) { animation-delay: 0.1s; }
+    .section:nth-child(2) { animation-delay: 0.2s; }
+    .section:nth-child(3) { animation-delay: 0.3s; }
+    .section:nth-child(4) { animation-delay: 0.4s; }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 快捷选币新功能样式 */
+.target-indicator {
+    font-size: 0.75em;
+    color: #667eea;
+    font-weight: 600;
+    margin-bottom: 8px;
+    padding: 4px 8px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+    }
+}
+
+.token-btn.custom-token-btn {
+    background: linear-gradient(135deg, #38a169, #2f855a);
+    color: white;
+    position: relative;
+}
+
+.token-btn.custom-token-btn::before {
+    content: '★';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    font-size: 8px;
+    color: #ffd700;
+}
+
+.token-btn.edit-btn {
+    background: linear-gradient(135deg, #ed8936, #dd6b20);
+    color: white;
+    font-weight: 700;
+    min-width: 60px;
+}
+
+.token-btn.edit-btn:hover {
+    background: linear-gradient(135deg, #dd6b20, #c05621);
+    transform: translateY(-2px) scale(1.05);
+}
+
+/* 编辑代币对话框样式 */
+.edit-tokens-dialog {
+    max-width: 600px;
+    width: 95%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.dialog-header h4 {
+    margin: 0;
+    color: #667eea;
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.dialog-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    color: #a0aec0;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.dialog-close-btn:hover {
+    background: #fed7d7;
+    color: #e53e3e;
+    transform: scale(1.1);
+}
+
+.dialog-close-btn:active {
+    transform: scale(0.95);
+}
+
+.edit-tokens-dialog h5 {
+    color: #667eea;
+    margin: 16px 0 8px 0;
+    font-size: 1em;
+    font-weight: 600;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 4px;
+}
+
+.add-token-section {
+    background: linear-gradient(135deg, #f7fafc, #edf2f7);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+.custom-tokens-section {
+    background: linear-gradient(135deg, #f0fff4, #f7fafc);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 1px solid #c6f6d5;
+}
+
+.custom-tokens-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+}
+
+.custom-token-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f7fafc;
+    transition: background-color 0.2s ease;
+}
+
+.custom-token-item:last-child {
+    border-bottom: none;
+}
+
+.custom-token-item:hover {
+    background: linear-gradient(135deg, #f7fafc, #edf2f7);
+}
+
+.custom-token-item .token-symbol {
+    font-weight: 700;
+    color: #2d3748;
+    min-width: 60px;
+    font-size: 0.9em;
+}
+
+.custom-token-item .token-address {
+    flex: 1;
+    color: #718096;
+    font-size: 0.8em;
+    font-family: 'Monaco', 'Menlo', monospace;
+    margin: 0 12px;
+    word-break: break-all;
+}
+
+.custom-token-item .btn {
+    margin: 0;
+    padding: 4px 8px;
+    font-size: 0.75em;
+    min-width: 50px;
+}
+
+.no-tokens {
+    text-align: center;
+    color: #a0aec0;
+    font-style: italic;
+    padding: 20px;
+    margin: 0;
+}
+
+.dialog-actions {
+    text-align: center;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* 输入框焦点状态增强 */
+#fromToken:focus + .form-group::after,
+#toToken:focus + .form-group::after {
+    content: '← 当前选择目标';
+    position: absolute;
+    right: -100px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7em;
+    color: #667eea;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+    .edit-tokens-dialog {
+        max-width: 95%;
+        margin: 20px;
+    }
+    
+    .custom-token-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .custom-token-item .token-address {
+        margin: 0;
+        word-break: break-all;
+    }
+    
+    .token-buttons {
+        justify-content: center;
+        gap: 4px;
+    }
+    
+    .token-btn {
+        font-size: 10px;
+        padding: 4px 8px;
+        min-width: auto;
+    }
+} 

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OKX DEX 调试页面</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 OKX DEX 前端调试页面</h1>
+    
+    <div id="results"></div>
+    
+    <h2>调试控制台</h2>
+    <button onclick="testClasses()">测试类加载</button>
+    <button onclick="testCrypto()">测试加密功能</button>
+    <button onclick="testConfig()">测试配置管理</button>
+    <button onclick="clearResults()">清除结果</button>
+    
+    <h2>手动测试</h2>
+    <p>打开浏览器控制台，运行以下命令：</p>
+    <pre>
+// 检查类是否加载
+console.log('CryptoUtils:', typeof window.CryptoUtils);
+console.log('ConfigManager:', typeof window.ConfigManager);
+console.log('APIClient:', typeof window.APIClient);
+console.log('Utils:', typeof window.Utils);
+
+// 测试配置管理
+ConfigManager.hasEncryptedConfig();
+
+// 调试解锁配置
+debugUnlockConfig();
+    </pre>
+
+    <!-- JavaScript 模块 -->
+    <script src="js/crypto-utils.js"></script>
+    <script src="js/config-manager.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/formatters.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/init.js"></script>
+    
+    <script>
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            document.getElementById('results').appendChild(div);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        function testClasses() {
+            addResult('🧪 开始测试类加载...', 'info');
+            
+            const classes = ['CryptoUtils', 'ConfigManager', 'APIClient', 'Utils', 'OKXDEXApp'];
+            
+            classes.forEach(className => {
+                if (typeof window[className] !== 'undefined') {
+                    addResult(`✅ ${className} - 已加载`, 'success');
+                } else {
+                    addResult(`❌ ${className} - 未加载`, 'error');
+                }
+            });
+            
+            // 检查app实例
+            if (typeof window.app !== 'undefined') {
+                addResult('✅ app实例 - 已创建', 'success');
+            } else {
+                addResult('❌ app实例 - 未创建', 'error');
+            }
+        }
+        
+        async function testCrypto() {
+            addResult('🔐 开始测试加密功能...', 'info');
+            
+            if (typeof window.CryptoUtils === 'undefined') {
+                addResult('❌ CryptoUtils未加载，无法测试', 'error');
+                return;
+            }
+            
+            try {
+                const testData = { test: 'hello world' };
+                const password = 'test123';
+                
+                const encrypted = await CryptoUtils.encrypt(testData, password);
+                addResult('✅ 加密测试通过', 'success');
+                
+                const decrypted = await CryptoUtils.decrypt(encrypted, password);
+                if (decrypted.test === testData.test) {
+                    addResult('✅ 解密测试通过', 'success');
+                } else {
+                    addResult('❌ 解密数据不匹配', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ 加密测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        function testConfig() {
+            addResult('⚙️ 开始测试配置管理...', 'info');
+            
+            if (typeof window.ConfigManager === 'undefined') {
+                addResult('❌ ConfigManager未加载，无法测试', 'error');
+                return;
+            }
+            
+            try {
+                const hasConfig = ConfigManager.hasEncryptedConfig();
+                addResult(`✅ 配置检查通过 - 本地配置: ${hasConfig ? '存在' : '不存在'}`, 'success');
+                
+                // 测试localStorage
+                localStorage.setItem('test_key', 'test_value');
+                const testValue = localStorage.getItem('test_key');
+                localStorage.removeItem('test_key');
+                
+                if (testValue === 'test_value') {
+                    addResult('✅ localStorage测试通过', 'success');
+                } else {
+                    addResult('❌ localStorage测试失败', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ 配置测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 页面加载完成后自动测试
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                addResult('🚀 页面加载完成，开始自动测试...', 'info');
+                testClasses();
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

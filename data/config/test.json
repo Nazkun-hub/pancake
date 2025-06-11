@@ -1,0 +1,5 @@
+{
+  "testValue": "hello world",
+  "testNumber": 42,
+  "testBoolean": true
+}

@@ -1,0 +1,508 @@
+/**
+ * 策略恢复管理界面样式
+ */
+
+/* 恢复模态框遮罩 */
+.recovery-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.recovery-modal-overlay.show {
+  opacity: 1;
+}
+
+.recovery-modal-overlay.hide {
+  opacity: 0;
+}
+
+/* 恢复模态框主体 */
+.recovery-modal {
+  background: var(--bg-color, #1a1b23);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+.recovery-modal-overlay.show .recovery-modal {
+  transform: scale(1);
+}
+
+/* 恢复头部 */
+.recovery-header {
+  padding: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-align: center;
+}
+
+.recovery-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.recovery-header h2 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.recovery-header p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* 恢复内容区 */
+.recovery-content {
+  padding: 24px 32px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* 工具栏 */
+.recovery-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color, #2d2e3f);
+}
+
+.toolbar-left {
+  display: flex;
+  gap: 8px;
+}
+
+.toolbar-right .selected-count {
+  color: var(--text-secondary, #8b92b5);
+  font-size: 14px;
+}
+
+/* 策略列表 */
+.recovery-strategies {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recovery-strategy-item {
+  background: var(--card-bg, #252631);
+  border: 1px solid var(--border-color, #2d2e3f);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.recovery-strategy-item:hover {
+  border-color: var(--primary-color, #667eea);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+}
+
+.strategy-info {
+  flex: 1;
+}
+
+.strategy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.strategy-header h4 {
+  margin: 0;
+  color: var(--text-primary, #ffffff);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-准备中 { background: #fff3cd; color: #856404; }
+.status-运行中 { background: #d1ecf1; color: #0c5460; }
+.status-监控中 { background: #d4edda; color: #155724; }
+.status-已暂停 { background: #f8d7da; color: #721c24; }
+
+.strategy-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-item .label {
+  color: var(--text-secondary, #8b92b5);
+  font-size: 14px;
+}
+
+.detail-item .value {
+  color: var(--text-primary, #ffffff);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+}
+
+.strategy-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 复选框样式 */
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary, #ffffff);
+  user-select: none;
+}
+
+.checkbox-container input {
+  display: none;
+}
+
+.checkmark {
+  width: 20px;
+  height: 20px;
+  background: var(--input-bg, #2d2e3f);
+  border: 2px solid var(--border-color, #404356);
+  border-radius: 4px;
+  margin-right: 8px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.checkbox-container:hover .checkmark {
+  border-color: var(--primary-color, #667eea);
+}
+
+.checkbox-container input:checked + .checkmark {
+  background: var(--primary-color, #667eea);
+  border-color: var(--primary-color, #667eea);
+}
+
+.checkbox-container input:checked + .checkmark::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* 恢复底部 */
+.recovery-footer {
+  padding: 24px 32px;
+  background: var(--card-bg, #252631);
+  border-top: 1px solid var(--border-color, #2d2e3f);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.recovery-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* 进度界面 */
+.recovery-progress {
+  padding: 32px;
+}
+
+.progress-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.progress-header h3 {
+  margin: 0 0 8px 0;
+  color: var(--text-primary, #ffffff);
+  font-size: 20px;
+}
+
+.progress-header p {
+  margin: 0;
+  color: var(--text-secondary, #8b92b5);
+  font-size: 14px;
+}
+
+.progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.progress-item {
+  background: var(--card-bg, #252631);
+  border: 1px solid var(--border-color, #2d2e3f);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.strategy-name {
+  color: var(--text-primary, #ffffff);
+  font-weight: 500;
+}
+
+.progress-status {
+  font-size: 14px;
+  color: var(--text-secondary, #8b92b5);
+}
+
+.progress-status.success {
+  color: #28a745;
+}
+
+.progress-status.error {
+  color: #dc3545;
+}
+
+.progress-bar {
+  height: 4px;
+  background: var(--border-color, #2d2e3f);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary-color, #667eea);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.progress-fill.success {
+  background: #28a745;
+}
+
+.progress-fill.error {
+  background: #dc3545;
+}
+
+/* 结果界面 */
+.recovery-results {
+  padding: 32px;
+  text-align: center;
+}
+
+.results-header {
+  margin-bottom: 32px;
+}
+
+.results-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.results-icon.success {
+  color: #28a745;
+}
+
+.results-icon.error {
+  color: #dc3545;
+}
+
+.results-header h3 {
+  margin: 0 0 8px 0;
+  color: var(--text-primary, #ffffff);
+  font-size: 20px;
+}
+
+.results-header p {
+  margin: 0;
+  color: var(--text-secondary, #8b92b5);
+  font-size: 16px;
+}
+
+.results-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--card-bg, #252631);
+  border: 1px solid var(--border-color, #2d2e3f);
+  border-radius: 8px;
+}
+
+.result-item.success {
+  border-color: #28a745;
+  background: rgba(40, 167, 69, 0.1);
+}
+
+.result-item.error {
+  border-color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.result-icon {
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+.result-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.strategy-id {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary, #ffffff);
+}
+
+.result-message {
+  font-size: 13px;
+  color: var(--text-secondary, #8b92b5);
+}
+
+.result-item.error .result-message {
+  color: #dc3545;
+}
+
+/* 按钮样式 */
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-primary {
+  background: var(--primary-color, #667eea);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover, #5a6fd8);
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-primary, #ffffff);
+  border: 1px solid var(--border-color, #2d2e3f);
+}
+
+.btn-outline:hover {
+  background: var(--border-color, #2d2e3f);
+  border-color: var(--primary-color, #667eea);
+}
+
+.btn-icon {
+  font-size: 12px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .recovery-modal {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .recovery-header {
+    padding: 24px;
+  }
+  
+  .recovery-content {
+    padding: 16px 24px;
+  }
+  
+  .recovery-footer {
+    padding: 16px 24px;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .recovery-actions {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .strategy-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .recovery-toolbar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .toolbar-right {
+    text-align: center;
+  }
+} 

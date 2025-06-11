@@ -1,0 +1,293 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# PancakeSwap V3 流动性管理系统 - 架构规范 (重构版)
+
+## 🏗️ 新架构概述
+
+本系统经过**重大重构**，从单一庞大服务转变为**专用模块化架构**，严格分离职责，确保代码清晰、可维护、可扩展。
+
+### 核心设计原则
+- **职责分离**：每个服务专注单一核心功能
+- **功能复现**：100%复现参考脚本的所有逻辑和步骤
+- **架构清晰**：模块间界限清晰，不允许跨职责调用
+- **代码简洁**：单一文件不超过800行，单一方法不超过100行
+- **用户友好**：智能参数设计，简化用户输入
+
+## 📁 重构后目录结构
+```
+src/
+├── api/                           # API层：HTTP接口
+│   └── routes.ts                 # 统一路由，调用各专用服务
+├── services/                     # 业务层：专用服务
+│   ├── LiquidityManager.ts      # 💧 流动性添加专用服务
+│   ├── PositionManager.ts       # 🎯 头寸管理专用服务  
+│   ├── ContractService.ts       # 🔧 基础合约交互服务
+│   ├── Web3Service.ts           # 🌐 区块链连接服务
+│   └── CryptoService.ts         # 🔐 钱包加密服务
+├── types/                        # 类型定义
+│   └── interfaces.ts            # 统一接口定义
+└── di/                          # 依赖注入
+    └── container.ts             # DI容器配置
+```
+
+## 🎯 新三层专用架构
+
+### 1. API层 - [routes.ts](mdc:src/api/routes.ts)
+**职责边界**：
+- ✅ HTTP请求/响应处理
+- ✅ 参数验证和格式化  
+- ✅ 调用专用服务（LiquidityManager、PositionManager）
+- ✅ 统一错误处理和日志记录
+- ❌ 业务逻辑实现
+- ❌ 直接合约交互
+- ❌ 复杂计算处理
+
+**路由分类**：
+```typescript
+// ✅ 正确：调用专用服务
+router.post('/add-liquidity', async (req, res) => {
+    // 1. 参数验证
+    const { inputAmount, inputToken, lowerPercent, upperPercent } = req.body;
+    
+    // 2. 调用专用LiquidityManager
+    const liquidityManager = container.resolve<LiquidityManager>(TYPES.LiquidityManager);
+    const result = await liquidityManager.createLiquidityPosition(params);
+    
+    // 3. 格式化响应
+    res.json({ success: true, data: result });
+});
+```
+
+### 2. 专用服务层
+
+#### 💧 LiquidityManager - [LiquidityManager.ts](mdc:src/services/LiquidityManager.ts)
+**单一职责**：流动性添加的完整实现
+**功能范围**：
+- ✅ 100%复现 `real_multicall_direct_test_fixed_v5.js` 所有步骤
+- ✅ 实时状态获取和重新计算 (`getRealTimeStateAndRecalculate`)
+- ✅ 动态滑点计算 (`calculateDynamicSlippage`)
+- ✅ 完整执行流程 (`executeWithRealTimeRecalculation`)
+- ✅ Tick范围计算 (`calculateTickRange`)
+- ✅ 流动性数量计算 (`calculateLiquidityFromAmount`)
+- ❌ 头寸管理功能
+- ❌ 基础合约查询
+- ❌ 钱包管理
+
+**代码规范**：
+- 文件大小：< 800行
+- 方法大小：< 100行
+- 100%功能复现，不允许删减步骤
+
+```typescript
+// ✅ 正确：专注流动性添加
+export class LiquidityManager implements IService {
+    async createLiquidityPosition(params: AddLiquidityParams): Promise<Result> {
+        // 1. 获取池子地址
+        const poolAddress = await this.getPoolAddress(provider, POOL_CONFIG);
+        
+        // 2. 实时状态计算（复现参考脚本）
+        const state = await this.getRealTimeStateAndRecalculate(...);
+        
+        // 3. 动态滑点计算（复现参考脚本）
+        const dynamicSlippage = this.calculateDynamicSlippage(...);
+        
+        // 4. 执行交易（复现参考脚本）
+        return await this.executeWithRealTimeRecalculation(...);
+    }
+}
+```
+
+#### 🎯 PositionManager - [PositionManager.ts](mdc:src/services/PositionManager.ts)
+**单一职责**：头寸管理的完整实现
+**功能范围**：
+- ✅ 100%复现 `position_management.js` 所有功能
+- ✅ 获取用户头寸 (`getUserPositions`) - 包含完整代币信息
+- ✅ 关闭单个头寸 (`closeSinglePosition`) - Multicall一步完成
+- ✅ 批量关闭所有头寸 (`closeAllPositions`) - 自动处理所有类型
+- ✅ 完整的错误处理和状态管理
+- ❌ 流动性添加功能
+- ❌ 基础合约查询  
+- ❌ 钱包管理
+
+**特殊设计**：
+```typescript
+// ✅ 正确：使用Multicall一步完成头寸关闭
+async closeSinglePosition(tokenId: string): Promise<PositionOperationResult> {
+    const multicallData = [];
+    
+    // Step 1: 移除流动性（如果有）
+    if (hasLiquidity) {
+        const decreaseCalldata = positionManager.interface.encodeFunctionData('decreaseLiquidity', [params]);
+        multicallData.push(decreaseCalldata);
+    }
+    
+    // Step 2: 收集手续费和剩余代币
+    const collectCalldata = positionManager.interface.encodeFunctionData('collect', [params]);
+    multicallData.push(collectCalldata);
+    
+    // Step 3: 销毁NFT
+    const burnCalldata = positionManager.interface.encodeFunctionData('burn', [tokenId]);
+    multicallData.push(burnCalldata);
+    
+    // 执行Multicall（一次交易完成所有操作）
+    const tx = await positionManager.multicall(multicallData);
+}
+```
+
+#### 🔧 ContractService - [ContractService.ts](mdc:src/services/ContractService.ts)
+**精简职责**：基础合约交互
+**功能范围**：
+- ✅ 代币授权 (`approveToken`)
+- ✅ 检查授权额度 (`checkAllowance`)  
+- ✅ 获取池子地址 (`getPoolAddress`)
+- ✅ 获取池子状态 (`getPoolState`)
+- ✅ 获取代币信息 (`getTokenInfo`)
+- ✅ Tick工具方法 (`getTickSpacing`, `nearestUsableTick`)
+- ❌ 复杂流动性逻辑（已迁移到LiquidityManager）
+- ❌ 头寸管理逻辑（已迁移到PositionManager）
+
+### 3. 基础设施层
+- **Web3Service** - 区块链连接和钱包管理
+- **CryptoService** - 钱包加密和私钥管理
+- **EventBus** - 事件通信
+
+## 🔄 重构对比
+
+### 重构前问题
+- ❌ ContractService过于庞大（>2000行）
+- ❌ 流动性逻辑不完整，缺少关键步骤
+- ❌ 头寸管理功能分散，缺少批量操作
+- ❌ 代码复杂，难以维护和调试
+
+### 重构后优势
+- ✅ 专用服务，职责清晰（每个<800行）
+- ✅ 100%复现参考脚本，功能完整
+- ✅ 智能参数设计，用户友好
+- ✅ 完善错误处理，稳定可靠
+- ✅ 模块化架构，易于扩展
+
+## 📐 新代码规范
+
+### 专用服务规范
+```typescript
+// ✅ 正确：LiquidityManager专注流动性添加
+export class LiquidityManager implements IService {
+    // 主入口：智能参数 -> 完整执行
+    async createLiquidityPosition(params: AddLiquidityParams): Promise<Result> {
+        // 100%复现参考脚本步骤
+    }
+    
+    // 私有方法：功能分解
+    private async getRealTimeStateAndRecalculate(): Promise<State> {
+        // 复现 getRealTimeStateAndRecalculate 函数
+    }
+    
+    private calculateDynamicSlippage(): number {
+        // 复现 calculateDynamicSlippage 函数  
+    }
+}
+```
+
+### 智能参数设计
+```typescript
+// ✅ 用户友好的参数接口
+interface AddLiquidityParams {
+    inputAmount: string;        // "0.1" (用户友好)
+    inputToken: 'WBNB' | 'USDT'; // 简化选择
+    lowerPercent: number;       // -5 (百分比)
+    upperPercent: number;       // 5 (百分比)  
+    baseSlippagePercent: number; // 1 (百分比)
+}
+
+// ❌ 避免复杂参数
+interface OldParams {
+    amount0Desired: string;     // 需要用户计算
+    amount1Desired: string;     // 复杂转换
+    tickLower: number;          // 需要tick知识
+    tickUpper: number;          // 不够智能
+}
+```
+
+### 方法大小限制
+```typescript
+// ✅ 正确：方法分解（<100行）
+async createLiquidityPosition(params: AddLiquidityParams): Promise<Result> {
+    const poolAddress = await this.getPoolAddress();
+    const state = await this.getRealTimeState(params);
+    const slippage = this.calculateDynamicSlippage(state);
+    return await this.executeTransaction(state, slippage);
+}
+
+// 私有方法：功能分解
+private async getRealTimeState(params: AddLiquidityParams): Promise<State> {
+    // 专注状态计算（<100行）
+}
+```
+
+## 🚀 新功能实现规范
+
+### 流动性添加流程
+1. **LiquidityManager.createLiquidityPosition()** - 主入口
+2. **getRealTimeStateAndRecalculate()** - 实时状态计算
+3. **calculateDynamicSlippage()** - 动态滑点计算
+4. **executeWithRealTimeRecalculation()** - 完整执行
+
+### 头寸管理流程
+1. **PositionManager.getUserPositions()** - 获取所有头寸
+2. **PositionManager.closeSinglePosition()** - 关闭单个头寸
+3. **PositionManager.closeAllPositions()** - 批量关闭
+
+### API调用流程
+```
+routes.ts -> LiquidityManager -> ContractService -> Web3Service
+         -> PositionManager  -> ContractService -> Web3Service
+```
+
+## 🛡️ 新架构保护规则
+
+### 强制要求
+1. **✅ LiquidityManager只处理流动性添加**
+2. **✅ PositionManager只处理头寸管理**
+3. **✅ ContractService只提供基础合约交互**
+4. **✅ 必须100%复现参考脚本功能和步骤**
+5. **✅ 使用智能参数，用户友好设计**
+
+### 禁止事项
+1. **❌ LiquidityManager包含头寸管理功能**
+2. **❌ PositionManager包含流动性添加功能**
+3. **❌ ContractService包含复杂业务逻辑**
+4. **❌ 删除或简化参考脚本的任何步骤**
+5. **❌ 单一文件超过800行**
+
+### 重构指导原则
+- **专用化优先**：每个服务专注单一功能
+- **完整复现**：参考脚本的所有步骤都必须保留
+- **用户友好**：参数设计要简化用户输入
+- **错误处理**：每个步骤都要有完善的错误处理
+
+## 📊 新架构质量指标
+
+- **文件大小**：< 2000行（专用服务）
+- **方法大小**：< 200行
+- **功能复现率**：100%（参考脚本）
+- **参数友好度**：用户只需提供简单参数
+- **错误处理覆盖率**：> 95%
+
+## 🔄 迁移和维护
+
+### 从旧架构迁移
+1. **功能分离**：将庞大的ContractService拆分
+2. **专用实现**：LiquidityManager和PositionManager独立实现
+3. **API更新**：routes.ts调用新的专用服务
+4. **参数简化**：使用智能参数替代复杂参数
+
+### 日常维护规则
+- 新功能必须放在正确的专用服务中
+- 不允许跨服务实现相同功能
+- 定期检查文件大小，超过2000行必须拆分
+- 所有修改必须保持100%功能复现
+
+这个新架构确保了代码的**专业性**、**可维护性**和**用户友好性**，同时100%保证了功能的完整性和正确性。
